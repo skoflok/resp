@@ -1,0 +1,25 @@
+{
+    "name": "skoflok/resp-implementation",
+    "description": "Just for Lust. Implementation RESP. Experiment",
+    "type": "project",
+    "license": "MIT",
+    "keywords": [
+        "redis",
+        "resp",
+        "socket"
+    ],
+    "authors": [
+        {
+            "name": "skoflok",
+            "email": "skoflok@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "ext-redis": "^5.3",
+        "php": "^7.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.5.x-dev"
+    }
+}
