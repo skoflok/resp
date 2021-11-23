@@ -64,6 +64,7 @@ class LexicTest extends TestCase
         return [
             'ok' => ["+OK\r\n", 1, "OK"],
             'with_rand' => ["asd+OK\r\nadas\r\n", 4, "OK"],
+            'negative_integer' => ["$-1\r\n", 1, "-1"],
         ];
     }
 
