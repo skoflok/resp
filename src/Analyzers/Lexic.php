@@ -66,6 +66,14 @@ final class Lexic
             throw new RuntimeException('Bad Bulk String format: Start token is not present');
         }
 
+        $bulkStringLength = (int) $this->cutStringToEnd($text, 1);
+        if('0' === $text[1]) {
+            // пока бесполезная проверка. означает, что строка пустая по RESP
+            // When an empty string is just: "$0\r\n\r\n"
+        }
+
+
+
         $delimeter = substr($text, 1, strlen(static::CRLF_TOKEN));
         if(static::CRLF_TOKEN != $delimeter) {
             throw new RuntimeException('Bad Bulk String format: End token is not present');
