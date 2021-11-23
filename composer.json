@@ -15,11 +15,21 @@
         }
     ],
     "minimum-stability": "dev",
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Skoflok\\Resp\\": "src/"
+        }
+    },
     "require": {
-        "ext-redis": "^5.3",
         "php": "^7.3"
     },
     "require-dev": {
+        "ext-redis": "^5.3",
         "phpunit/phpunit": "9.5.x-dev"
     }
 }
