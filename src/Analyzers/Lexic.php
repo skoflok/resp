@@ -73,17 +73,17 @@ final class Lexic
         if(0 === $bulkStringLength) {
             // пока бесполезная проверка. означает, что строка пустая по RESP
             // When an empty string is just: "$0\r\n\r\n"
-        }
-
-        if(-1 === $bulkStringLength) {
+        } elseif (-1 === $bulkStringLength) {
             // "$-1\r\n"
             // This is called a Null Bulk String
+        } else {
+            $lengthOfSuffix = strlen(strval($bulkStringLength));
+            $delimeter = substr($text, 1 + $lengthOfSuffix, strlen(static::CRLF_TOKEN));
+            if(static::CRLF_TOKEN != $delimeter) {
+                throw new RuntimeException('Bad Bulk String format: End token is not present');
+            }
         }
 
-        $delimeter = substr($text, 1, strlen(static::CRLF_TOKEN));
-        if(static::CRLF_TOKEN != $delimeter) {
-            throw new RuntimeException('Bad Bulk String format: End token is not present');
-        }
 
         return true;
     }

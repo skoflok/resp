@@ -98,11 +98,15 @@ class LexicTest extends TestCase
      */
     public function testFailCutStringToEnd($raw, $offset)
     {
+        $check = false;
         try {
             $this->analyzer->cutStringToEnd($raw, $offset);
         } catch (\Throwable $th) {
+            $check = true;
             $this->assertInstanceOf(RuntimeException::class, $th);
         }
+
+        $this->assertTrue($check);
     }
 
     public function checkBulkStringDataProvider()
@@ -112,7 +116,7 @@ class LexicTest extends TestCase
                 "$6\r\nfoobar\r\n",
             ],
             'long_string' => [
-                "$27\r\checkBulkStringDataProvider\r\n",
+                "$27\r\ncheckBulkStringDataProvider\r\n",
             ],
             'null' => [
                 "$-1\r\n",
@@ -130,7 +134,32 @@ class LexicTest extends TestCase
      */
     public function testCheckBulkString($raw)
     {
-        $this->markTestIncomplete();
         $this->assertTrue($this->analyzer->checkBulkString($raw));
+    }
+
+    public function failCheckBulkStringDataProvider()
+    {
+        return [
+            'without_bad_bulk_token' => ["+-1\r\n"],
+            'without_any_token' => ["-1\r\n"],
+        ];
+    }
+
+    /**
+     * @dataProvider failCheckBulkStringDataProvider
+     *
+     * @param [type] $raw
+     * @return void
+     */
+    public function testFailCheckBulkString($raw) {
+        $check = false;
+        try {
+            $this->analyzer->checkBulkString($raw);
+        } catch (\Throwable $th) {
+            $check = true;
+            $this->assertInstanceOf(RuntimeException::class, $th);
+        }
+
+        $this->assertTrue($check);
     }
 }
