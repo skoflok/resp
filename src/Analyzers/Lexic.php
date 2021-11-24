@@ -46,7 +46,7 @@ final class Lexic
                 $init[] = $s;
                 $init[] = (int) $this->cutStringToEnd($text, $i + 1);
             } elseif (self::BULK_STRINGS_TOKEN == $s) {
-                $this->checkBulkString($text);
+                $this->prepareBulkString($text);
             }
         }
     }
@@ -63,7 +63,7 @@ final class Lexic
         return $string;
     }
 
-    public function checkBulkString($text) : bool
+    public function prepareBulkString($text) : array
     {
         if(self::BULK_STRINGS_TOKEN !=$text[0]) {
             throw new RuntimeException('Bad Bulk String format: Start token is not present');
@@ -71,20 +71,22 @@ final class Lexic
 
         $bulkStringLength = (int) $this->cutStringToEnd($text, 1);
         if(0 === $bulkStringLength) {
-            // пока бесполезная проверка. означает, что строка пустая по RESP
             // When an empty string is just: "$0\r\n\r\n"
+            $bulkString = "";
         } elseif (-1 === $bulkStringLength) {
             // "$-1\r\n"
             // This is called a Null Bulk String
+            $bulkString = null;
         } else {
             $lengthOfSuffix = strlen(strval($bulkStringLength));
             $delimeter = substr($text, 1 + $lengthOfSuffix, strlen(static::CRLF_TOKEN));
+            $bulkString = substr($text, 1 + $lengthOfSuffix + strlen(static::CRLF_TOKEN), $bulkStringLength);
             if(static::CRLF_TOKEN != $delimeter) {
                 throw new RuntimeException('Bad Bulk String format: End token is not present');
             }
         }
 
 
-        return true;
+        return [$bulkStringLength, $bulkString];
     }
 }

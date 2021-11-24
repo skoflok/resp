@@ -109,35 +109,38 @@ class LexicTest extends TestCase
         $this->assertTrue($check);
     }
 
-    public function checkBulkStringDataProvider()
+    public function prepareBulkStringDataProvider()
     {
         return [
             'ok' => [
-                "$6\r\nfoobar\r\n",
+                "$6\r\nfoobar\r\n", 6 , "foobar"
             ],
             'long_string' => [
-                "$27\r\ncheckBulkStringDataProvider\r\n",
+                "$27\r\ncheckBulkStringDataProvider\r\n", 27 , "checkBulkStringDataProvider"
             ],
             'null' => [
-                "$-1\r\n",
+                "$-1\r\n", -1, null
             ],
             'empty' => [
-                "$0\r\n\r\n",
+                "$0\r\n\r\n", 0, ""
             ],
         ];
     }
 
     /**
-     * @dataProvider checkBulkStringDataProvider
+     * @dataProvider prepareBulkStringDataProvider
      *
      * @return void
      */
-    public function testCheckBulkString($raw)
+    public function testPrepareBulkString($raw, $expectedLength, $expectedString)
     {
-        $this->assertTrue($this->analyzer->checkBulkString($raw));
+        [$length, $string] = $this->analyzer->prepareBulkString($raw);
+        $this->assertEquals($expectedLength, $length);
+        $this->assertEquals($expectedString, $string);
+        
     }
 
-    public function failCheckBulkStringDataProvider()
+    public function failPrepareBulkStringDataProvider()
     {
         return [
             'without_bad_bulk_token' => ["+-1\r\n"],
@@ -146,15 +149,15 @@ class LexicTest extends TestCase
     }
 
     /**
-     * @dataProvider failCheckBulkStringDataProvider
+     * @dataProvider failPrepareBulkStringDataProvider
      *
      * @param [type] $raw
      * @return void
      */
-    public function testFailCheckBulkString($raw) {
+    public function testFailPrepareBulkString($raw) {
         $check = false;
         try {
-            $this->analyzer->checkBulkString($raw);
+            $this->analyzer->prepareBulkString($raw);
         } catch (\Throwable $th) {
             $check = true;
             $this->assertInstanceOf(RuntimeException::class, $th);
