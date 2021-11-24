@@ -57,6 +57,9 @@ final class Lexic
             throw new RuntimeException('Bad string: End token is not present');
         }
         $string = mb_substr($text, $offset, $end-$offset);
+        if("" === $string) {
+            throw new RuntimeException('Bad string: Empty string');
+        }
         return $string;
     }
 
@@ -67,12 +70,15 @@ final class Lexic
         }
 
         $bulkStringLength = (int) $this->cutStringToEnd($text, 1);
-        if('0' === $text[1]) {
+        if(0 === $bulkStringLength) {
             // пока бесполезная проверка. означает, что строка пустая по RESP
             // When an empty string is just: "$0\r\n\r\n"
         }
 
-
+        if(-1 === $bulkStringLength) {
+            // "$-1\r\n"
+            // This is called a Null Bulk String
+        }
 
         $delimeter = substr($text, 1, strlen(static::CRLF_TOKEN));
         if(static::CRLF_TOKEN != $delimeter) {
