@@ -46,7 +46,13 @@ final class Lexic
                 $init[] = $s;
                 $init[] = (int) $this->cutStringToEnd($text, $i + 1);
             } elseif (self::BULK_STRINGS_TOKEN == $s) {
-                $this->prepareBulkString($text);
+                [$length, $string] = $this->prepareBulkString($text);
+                $init[] = $s;
+                $init[] = $length;
+                $init[] = self::CRLF_TOKEN;
+                $init[] = $string;
+            } elseif (self::ARRAY_TOKEN == $s) {
+                
             }
         }
     }
