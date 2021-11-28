@@ -5,6 +5,11 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Skoflok\Resp\Analyzers\Lexic as LexicAnalyzer;
 
+/**
+ * @coversDefaultClass Skoflok\Resp\Analyzers\Lexic
+ * @group unit
+ * @group unit-lexic
+ */
 class LexicTest extends TestCase
 {
     private $analyzer;
@@ -63,6 +68,7 @@ class LexicTest extends TestCase
     {
         return [
             'ok' => ["+OK\r\n", 1, "OK"],
+            'long_int' => [":12345\r\n", 1, "12345"],
             'with_rand' => ["asd+OK\r\nadas\r\n", 4, "OK"],
             'negative_integer' => ["$-1\r\n", 1, "-1"],
         ];
@@ -164,5 +170,27 @@ class LexicTest extends TestCase
         }
 
         $this->assertTrue($check);
+    }
+
+    public function arrayProvider()
+    {
+        return [
+            'empty' => ["*0\r\n", ["*" , 0, "\r\n"] ],
+            'null' => ["*-1\r\n" , ["*", -1 , null , "\r\n"] ],
+            'three_elements' => ["*3\r\n:1\r\n:2\r\n:3\r\n" , ["*", 3, "\r\n", ":", 1, "\r\n", ":", 2, "\r\n", ":" , 3 , "\r\n"]  ],
+        ];
+    }
+
+    /**
+     * @dataProvider arrayProvider
+     *
+     * @param [type] $raw
+     * @param [type] $expected
+     * @return void
+     */
+    public function testExtractArray($raw, $expected)
+    {
+        $tokens = $this->analyzer->extractArray($raw);
+        $this->assertEquals($expected, $tokens);
     }
 }

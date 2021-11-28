@@ -33,31 +33,126 @@ final class Lexic
         return [];
     }
 
-    private function explode($text, $init = []): array
+    public function explode($text, $init = []): array
     {
-        foreach($string as $i => $s) {
+        $length = mb_strlen($text);
+        for ($i=0; $i < $length ; $i++) { 
+            $s = $text[0];
             if(self::SIMPLE_STRING_TOKEN == $s) {
-                $init[] = $s;
-                $init[] = $this->cutStringToEnd($text, $i + 1);
+                $tokens = $this->extractSimpleElement($text, $i + 1, "string");
             } elseif (self::ERROR_TOKEN == $s) {
-                $init[] = $s;
-                $init[] = $this->cutStringToEnd($text, $i + 1);
+                $tokens = $this->extractSimpleElement($text, $i + 1, "string");
             } elseif (self::INTEGER_TOKEN == $s) {
-                $init[] = $s;
-                $init[] = (int) $this->cutStringToEnd($text, $i + 1);
+                $tokens = $this->extractSimpleElement($text, $i + 1, "int");
             } elseif (self::BULK_STRINGS_TOKEN == $s) {
-                [$length, $string] = $this->prepareBulkString($text);
-                $init[] = $s;
-                $init[] = $length;
-                $init[] = self::CRLF_TOKEN;
-                $init[] = $string;
+                $tokens = $this->extractBulkString($text);
             } elseif (self::ARRAY_TOKEN == $s) {
-                
+                $this->extractArray($text);
             }
         }
+
+        $result = array_merge($init, $tokens);
     }
 
-    public function cutStringToEnd($text, $offset) {
+    /**
+     * Undocumented function
+     *
+     * @param string $text
+     * @param integer $postion
+     * @param [type] $return
+     * @return array
+     */
+    public function extractSimpleElement(string $text, int $postion, $return) : array
+    {
+        $tokens = [];
+        $tokens[] = $text[0];
+        if($return == 'string') {
+            $tokens[] = $this->cutStringToEnd($text, $postion + 1);
+        } elseif ($return == 'int') {
+            $tokens[] = (int) $this->cutStringToEnd($text, $postion + 1);
+        } else {
+            throw new RuntimeException('Bad type returned value');
+        }
+        $tokens[] = self::CRLF_TOKEN;
+        return $tokens;
+    }
+
+    public function extractBulkString(string $text) : array
+    {
+        $tokens = [];
+        [$length, $string] = $this->prepareBulkString($text);
+        $tokens[] = $text[0];
+        $tokens[] = $length;
+        $tokens[] = self::CRLF_TOKEN;
+        $tokens[] = $string;
+        $tokens[] = self::CRLF_TOKEN;
+        return $tokens;
+    }
+
+    public function extractArray(string $text) : array
+    {
+        $tokens = [];
+        if(self::ARRAY_TOKEN != $text[0]) {
+            throw new RuntimeException('RESP: Bad array token');
+        }
+        $tokens[] = self::ARRAY_TOKEN;
+        $length = $this->cutStringToEnd($text, 1);
+        if(is_int($length)) {
+            throw new RuntimeException('RESP: Bad length array');
+        } else {
+            $length = (int) $length;
+        }
+        $lengthOfLength = strlen(strval($length));
+
+        $tokens[] = $length;
+
+        if(-1 == $length) {
+            // For instance when the BLPOP command times out, 
+            // it returns a Null Array that has a count of -1 as in the following example: "*-1\r\n"
+            $tokens[] = null;
+        } elseif(0 == $length) {
+            // So an empty Array is just the following: "*0\r\n"
+
+        } elseif ($length > 0) {
+
+        } else {
+            throw new RuntimeException('RESP: Bad length of array');
+        }
+
+        $tokens[] = $length;
+        $tokens[] = self::CRLF_TOKEN;
+
+        $offset = strlen(self::ARRAY_TOKEN) + $lengthOfLength + strlen(self::CRLF_TOKEN);
+
+        $endOfString = mb_strpos($text, $offset);
+
+        if(self::CRLF_TOKEN == $endOfString) {
+            $tokens[] = self::CRLF_TOKEN;
+            return $tokens;
+        } else {
+            $elementTokens = $this->explode($endOfString);
+            return array_merge($tokens, $elementTokens);
+        }
+
+        
+    }
+
+    public function prepareArray(array $text) : array
+    {
+
+    }
+
+
+    
+    /**
+     * Undocumented function
+     *
+     * @param string $text
+     * @param integer $offset
+     * @return string
+     */
+    public function cutStringToEnd(string $text, int $offset): string
+    {
         $end = mb_strpos($text, static::CRLF_TOKEN, $offset);
         if(false == $end) {
             throw new RuntimeException('Bad string: End token is not present');
