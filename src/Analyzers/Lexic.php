@@ -35,6 +35,7 @@ final class Lexic
 
     public function explode($text, $init = []): array
     {
+        $tokens = [];
         $length = mb_strlen($text);
         for ($i=0; $i < $length ; $i++) { 
             $s = $text[0];
