@@ -48,7 +48,8 @@ final class Lexic
             } elseif (self::BULK_STRINGS_TOKEN == $s) {
                 $newTokens = $this->extractBulkString($text);
             } elseif (self::ARRAY_TOKEN == $s) {
-                $newTokens = $this->extractArray($text);
+                $subText = mb_substr($text, $i);
+                $newTokens = $this->extractArray($subText);
             } else {
                 throw new RuntimeException("Token parse error");
             }

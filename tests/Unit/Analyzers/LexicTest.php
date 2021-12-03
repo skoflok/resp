@@ -199,7 +199,6 @@ class LexicTest extends TestCase
                     "-", "Bar", "\r\n"
                 ],
             ],
-
             'five_elements_with_bulk_string' => [
                 "*5\r\n$27\r\ncheckBulkStringDataProvider\r\n:2\r\n:3\r\n+Foo\r\n-Bar\r\n",
                 [
@@ -211,6 +210,35 @@ class LexicTest extends TestCase
                     "-", "Bar", "\r\n"
                 ],
             ],
+            'simple_array_with_simple_array' => [
+                "*2\r\n*3\r\n:1\r\n:2\r\n:3\r\n*2\r\n+Foo\r\n-Bar\r\n",
+                [
+                    "*", "2", "\r\n",
+                    "*", "3", "\r\n",
+                    ":",1 ,"\r\n",
+                    ":", 2, "\r\n",
+                    ":", 3, "\r\n",
+                    "*", 2, "\r\n",
+                    "+", "Foo", "\r\n",
+                    "-", "Bar", "\r\n",
+                ]
+            ],
+            'long_array' => [
+                "*10\r\n:0\r\n:1\r\n:2\r\n:3\r\n:4\r\n:5\r\n:6\r\n:7\r\n:8\r\n:9\r\n",
+                [
+                    "*", 10, "\r\n",
+                    ":", 0, "\r\n",
+                    ":", 1, "\r\n",
+                    ":", 2, "\r\n",
+                    ":", 3, "\r\n",
+                    ":", 4, "\r\n",
+                    ":", 5, "\r\n",
+                    ":", 6, "\r\n",
+                    ":", 7, "\r\n",
+                    ":", 8, "\r\n",
+                    ":", 9, "\r\n",
+                ],
+            ]
         ];
     }
 
