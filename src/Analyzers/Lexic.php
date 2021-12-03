@@ -38,21 +38,35 @@ final class Lexic
         $tokens = [];
         $length = mb_strlen($text);
         for ($i=0; $i < $length ; $i++) { 
-            $s = $text[0];
+            $s = $text[$i];
             if(self::SIMPLE_STRING_TOKEN == $s) {
-                $tokens = $this->extractSimpleElement($text, $i + 1, "string");
+                $newTokens = $this->extractSimpleElement($text, $i + 1, "string");
             } elseif (self::ERROR_TOKEN == $s) {
-                $tokens = $this->extractSimpleElement($text, $i + 1, "string");
+                $newTokens = $this->extractSimpleElement($text, $i + 1, "string");
             } elseif (self::INTEGER_TOKEN == $s) {
-                $tokens = $this->extractSimpleElement($text, $i + 1, "int");
+                $newTokens = $this->extractSimpleElement($text, $i + 1, "int");
             } elseif (self::BULK_STRINGS_TOKEN == $s) {
-                $tokens = $this->extractBulkString($text);
+                $newTokens = $this->extractBulkString($text);
             } elseif (self::ARRAY_TOKEN == $s) {
-                $this->extractArray($text);
+                $newTokens = $this->extractArray($text);
+            } else {
+                throw new RuntimeException("Token parse error");
             }
+            $tokens = array_merge($tokens, $newTokens);
+
+            $offset = $this->calcOffset($tokens);
+            $i = $offset - 1;
         }
 
         $result = array_merge($init, $tokens);
+
+        return $result;
+    }
+
+    private function calcOffset(array $tokens) : int
+    {
+        $string = implode('', $tokens);
+        return strlen($string);
     }
 
     /**
@@ -66,11 +80,12 @@ final class Lexic
     public function extractSimpleElement(string $text, int $postion, $return) : array
     {
         $tokens = [];
-        $tokens[] = $text[0];
+        // по-идее, предыдущий элемент должен быть токеном.
+        $tokens[] = $text[$postion - 1];
         if($return == 'string') {
-            $tokens[] = $this->cutStringToEnd($text, $postion + 1);
+            $tokens[] = $this->cutStringToEnd($text, $postion);
         } elseif ($return == 'int') {
-            $tokens[] = (int) $this->cutStringToEnd($text, $postion + 1);
+            $tokens[] = (int) $this->cutStringToEnd($text, $postion);
         } else {
             throw new RuntimeException('Bad type returned value');
         }
@@ -120,15 +135,13 @@ final class Lexic
             throw new RuntimeException('RESP: Bad length of array');
         }
 
-        $tokens[] = $length;
         $tokens[] = self::CRLF_TOKEN;
 
         $offset = strlen(self::ARRAY_TOKEN) + $lengthOfLength + strlen(self::CRLF_TOKEN);
 
-        $endOfString = mb_strpos($text, $offset);
+        $endOfString = mb_substr($text, $offset);
 
-        if(self::CRLF_TOKEN == $endOfString) {
-            $tokens[] = self::CRLF_TOKEN;
+        if(self::CRLF_TOKEN == $endOfString || !$endOfString) {
             return $tokens;
         } else {
             $elementTokens = $this->explode($endOfString);

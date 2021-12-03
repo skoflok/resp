@@ -71,6 +71,7 @@ class LexicTest extends TestCase
             'long_int' => [":12345\r\n", 1, "12345"],
             'with_rand' => ["asd+OK\r\nadas\r\n", 4, "OK"],
             'negative_integer' => ["$-1\r\n", 1, "-1"],
+            'long_string' => [":1\r\n:2\r\n:3\r\n", 1, "1"],
         ];
     }
 
@@ -119,16 +120,16 @@ class LexicTest extends TestCase
     {
         return [
             'ok' => [
-                "$6\r\nfoobar\r\n", 6 , "foobar"
+                "$6\r\nfoobar\r\n", 6, "foobar",
             ],
             'long_string' => [
-                "$27\r\ncheckBulkStringDataProvider\r\n", 27 , "checkBulkStringDataProvider"
+                "$27\r\ncheckBulkStringDataProvider\r\n", 27, "checkBulkStringDataProvider",
             ],
             'null' => [
-                "$-1\r\n", -1, null
+                "$-1\r\n", -1, null,
             ],
             'empty' => [
-                "$0\r\n\r\n", 0, ""
+                "$0\r\n\r\n", 0, "",
             ],
         ];
     }
@@ -143,7 +144,7 @@ class LexicTest extends TestCase
         [$length, $string] = $this->analyzer->prepareBulkString($raw);
         $this->assertEquals($expectedLength, $length);
         $this->assertEquals($expectedString, $string);
-        
+
     }
 
     public function failPrepareBulkStringDataProvider()
@@ -160,7 +161,8 @@ class LexicTest extends TestCase
      * @param [type] $raw
      * @return void
      */
-    public function testFailPrepareBulkString($raw) {
+    public function testFailPrepareBulkString($raw)
+    {
         $check = false;
         try {
             $this->analyzer->prepareBulkString($raw);
@@ -175,9 +177,28 @@ class LexicTest extends TestCase
     public function arrayProvider()
     {
         return [
-            'empty' => ["*0\r\n", ["*" , 0, "\r\n"] ],
-            'null' => ["*-1\r\n" , ["*", -1 , null , "\r\n"] ],
-            'three_elements' => ["*3\r\n:1\r\n:2\r\n:3\r\n" , ["*", 3, "\r\n", ":", 1, "\r\n", ":", 2, "\r\n", ":" , 3 , "\r\n"]  ],
+            'empty' => ["*0\r\n", ["*", 0, "\r\n"]],
+            'null' => ["*-1\r\n", ["*", -1, null, "\r\n"]],
+            'three_integers' => [
+                "*3\r\n:1\r\n:2\r\n:3\r\n",
+                [
+                    "*", 3, "\r\n",
+                    ":", 1, "\r\n",
+                    ":", 2, "\r\n",
+                    ":", 3, "\r\n",
+                ],
+            ],
+            'five_elements' => [
+                "*5\r\n:1\r\n:2\r\n:3\r\n+Foo\r\n-Bar\r\n",
+                [
+                    "*", 5, "\r\n",
+                    ":", 1, "\r\n", 
+                    ":", 2, "\r\n", 
+                    ":", 3, "\r\n", 
+                    "+", "Foo", "\r\n", 
+                    "-", "Bar", "\r\n"
+                ],
+            ],
         ];
     }
 
@@ -193,4 +214,32 @@ class LexicTest extends TestCase
         $tokens = $this->analyzer->extractArray($raw);
         $this->assertEquals($expected, $tokens);
     }
+
+    public function extractSimpleElementProvider()
+    {
+        return [
+            'three_integer' => [":1\r\n:2\r\n:3\r\n", 1, "int", [":", 1, "\r\n"]],
+        ];
+    }
+
+    /**
+     * @dataProvider extractSimpleElementProvider
+     *
+     * @param [type] $raw
+     * @param [type] $postion
+     * @param [type] $return
+     * @param [type] $expected
+     * @return void
+     */
+    public function testExtractSimpleElement($raw, $postion, $return, $expected)
+    {
+        $tokens = $this->analyzer->extractSimpleElement($raw, $postion, $return);
+        $this->assertEquals($expected, $tokens);
+    }
+
+    public function testExplode()
+    {
+        $this->markTestIncomplete();
+    }
+
 }
