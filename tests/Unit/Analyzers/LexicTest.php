@@ -199,6 +199,18 @@ class LexicTest extends TestCase
                     "-", "Bar", "\r\n"
                 ],
             ],
+
+            'five_elements_with_bulk_string' => [
+                "*5\r\n$27\r\ncheckBulkStringDataProvider\r\n:2\r\n:3\r\n+Foo\r\n-Bar\r\n",
+                [
+                    "*", 5, "\r\n",
+                    "$", 27, "\r\n", "checkBulkStringDataProvider", "\r\n",
+                    ":", 2, "\r\n", 
+                    ":", 3, "\r\n", 
+                    "+", "Foo", "\r\n", 
+                    "-", "Bar", "\r\n"
+                ],
+            ],
         ];
     }
 
