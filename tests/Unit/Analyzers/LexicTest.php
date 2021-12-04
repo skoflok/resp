@@ -16,6 +16,7 @@ class LexicTest extends TestCase
 
     public function setUp(): void
     {
+
         $this->analyzer = new LexicAnalyzer();
     }
 

@@ -2,29 +2,26 @@
 
 namespace Skoflok\Resp\Analyzers;
 use RuntimeException as RuntimeException;
+use Skoflok\Resp\RespTokenConstants as Constants;
 
-final class Lexic
+class Lexic
 {
-    const SIMPLE_STRING_TOKEN = '+';
-    const ERROR_TOKEN = '-';
-    const INTEGER_TOKEN = ':';
-    const BULK_STRINGS_TOKEN = '$';
-    const ARRAY_TOKEN = '*';
-    const CRLF_TOKEN = "\r\n";
+    private $simpleStringToken;
+    private $errorToken;
+    private $integerToken;
+    private $bulkStringToken;
+    private $arrayToken;
+    private $crlfToken;
 
-    const TOKENS = [
-        self::SIMPLE_STRING_TOKEN,
-        self::ERROR_TOKEN,
-        self::INTEGER_TOKEN,
-        self::BULK_STRINGS_TOKEN,
-        self::ARRAY_TOKEN,
-        self::CRLF_TOKEN,
-    ];
-
-    const TOKENS_WITH_COUNTER_POSTFIX = [
-        self::ARRAY_TOKEN,
-        self::BULK_STRINGS_TOKEN,
-    ];
+    public function __construct()
+    {
+        $this->simpleStringToken = Constants::SIMPLE_STRING_TOKEN;
+        $this->errorToken = Constants::ERROR_TOKEN;
+        $this->integerToken = Constants::INTEGER_TOKEN;
+        $this->bulkStringToken = Constants::BULK_STRING_TOKEN;
+        $this->arrayToken = Constants::ARRAY_TOKEN;
+        $this->crlfToken = Constants::CRLF_TOKEN;
+    }
 
     public function unserialize(string $text) : array
     {
@@ -39,15 +36,15 @@ final class Lexic
         $length = mb_strlen($text);
         for ($i=0; $i < $length ; $i++) { 
             $s = $text[$i];
-            if(self::SIMPLE_STRING_TOKEN == $s) {
+            if($this->simpleStringToken == $s) {
                 $newTokens = $this->extractSimpleElement($text, $i + 1, "string");
-            } elseif (self::ERROR_TOKEN == $s) {
+            } elseif ($this->errorToken == $s) {
                 $newTokens = $this->extractSimpleElement($text, $i + 1, "string");
-            } elseif (self::INTEGER_TOKEN == $s) {
+            } elseif ($this->integerToken == $s) {
                 $newTokens = $this->extractSimpleElement($text, $i + 1, "int");
-            } elseif (self::BULK_STRINGS_TOKEN == $s) {
+            } elseif ($this->bulkStringToken == $s) {
                 $newTokens = $this->extractBulkString($text);
-            } elseif (self::ARRAY_TOKEN == $s) {
+            } elseif ($this->arrayToken == $s) {
                 $subText = mb_substr($text, $i);
                 $newTokens = $this->extractArray($subText);
             } else {
@@ -90,7 +87,7 @@ final class Lexic
         } else {
             throw new RuntimeException('Bad type returned value');
         }
-        $tokens[] = self::CRLF_TOKEN;
+        $tokens[] = $this->crlfToken;
         return $tokens;
     }
 
@@ -100,19 +97,19 @@ final class Lexic
         [$length, $string] = $this->prepareBulkString($text);
         $tokens[] = $text[0];
         $tokens[] = $length;
-        $tokens[] = self::CRLF_TOKEN;
+        $tokens[] = $this->crlfToken;
         $tokens[] = $string;
-        $tokens[] = self::CRLF_TOKEN;
+        $tokens[] = $this->crlfToken;
         return $tokens;
     }
 
     public function extractArray(string $text) : array
     {
         $tokens = [];
-        if(self::ARRAY_TOKEN != $text[0]) {
+        if($this->arrayToken != $text[0]) {
             throw new RuntimeException('RESP: Bad array token');
         }
-        $tokens[] = self::ARRAY_TOKEN;
+        $tokens[] = $this->arrayToken;
         $length = $this->cutStringToEnd($text, 1);
         if(is_int($length)) {
             throw new RuntimeException('RESP: Bad length array');
@@ -136,13 +133,13 @@ final class Lexic
             throw new RuntimeException('RESP: Bad length of array');
         }
 
-        $tokens[] = self::CRLF_TOKEN;
+        $tokens[] = $this->crlfToken;
 
-        $offset = strlen(self::ARRAY_TOKEN) + $lengthOfLength + strlen(self::CRLF_TOKEN);
+        $offset = strlen($this->arrayToken) + $lengthOfLength + strlen($this->crlfToken);
 
         $endOfString = mb_substr($text, $offset);
 
-        if(self::CRLF_TOKEN == $endOfString || !$endOfString) {
+        if($this->crlfToken == $endOfString || !$endOfString) {
             return $tokens;
         } else {
             $elementTokens = $this->explode($endOfString);
@@ -151,12 +148,6 @@ final class Lexic
 
         
     }
-
-    public function prepareArray(array $text) : array
-    {
-
-    }
-
 
     
     /**
@@ -168,7 +159,7 @@ final class Lexic
      */
     public function cutStringToEnd(string $text, int $offset): string
     {
-        $end = mb_strpos($text, static::CRLF_TOKEN, $offset);
+        $end = mb_strpos($text, $this->crlfToken, $offset);
         if(false == $end) {
             throw new RuntimeException('Bad string: End token is not present');
         }
@@ -181,7 +172,7 @@ final class Lexic
 
     public function prepareBulkString($text) : array
     {
-        if(self::BULK_STRINGS_TOKEN !=$text[0]) {
+        if($this->bulkStringToken !=$text[0]) {
             throw new RuntimeException('Bad Bulk String format: Start token is not present');
         }
 
@@ -195,9 +186,9 @@ final class Lexic
             $bulkString = null;
         } else {
             $lengthOfSuffix = strlen(strval($bulkStringLength));
-            $delimeter = substr($text, 1 + $lengthOfSuffix, strlen(static::CRLF_TOKEN));
-            $bulkString = substr($text, 1 + $lengthOfSuffix + strlen(static::CRLF_TOKEN), $bulkStringLength);
-            if(static::CRLF_TOKEN != $delimeter) {
+            $delimeter = substr($text, 1 + $lengthOfSuffix, strlen($this->crlfToken));
+            $bulkString = substr($text, 1 + $lengthOfSuffix + strlen($this->crlfToken), $bulkStringLength);
+            if($this->crlfToken != $delimeter) {
                 throw new RuntimeException('Bad Bulk String format: End token is not present');
             }
         }
