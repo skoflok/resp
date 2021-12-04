@@ -2,26 +2,10 @@
 
 namespace Skoflok\Resp\Analyzers;
 use RuntimeException as RuntimeException;
-use Skoflok\Resp\RespTokenConstants as Constants;
+use Skoflok\Resp\Analyzers\AbstractAnalyzer;
 
-class Lexic
+class Lexic extends AbstractAnalyzer
 {
-    private $simpleStringToken;
-    private $errorToken;
-    private $integerToken;
-    private $bulkStringToken;
-    private $arrayToken;
-    private $crlfToken;
-
-    public function __construct()
-    {
-        $this->simpleStringToken = Constants::SIMPLE_STRING_TOKEN;
-        $this->errorToken = Constants::ERROR_TOKEN;
-        $this->integerToken = Constants::INTEGER_TOKEN;
-        $this->bulkStringToken = Constants::BULK_STRING_TOKEN;
-        $this->arrayToken = Constants::ARRAY_TOKEN;
-        $this->crlfToken = Constants::CRLF_TOKEN;
-    }
 
     public function unserialize(string $text) : array
     {

@@ -2,7 +2,10 @@
 
 namespace Skoflok\Resp\Analyzers;
 
-class Syntax
+use RuntimeException as RuntimeException;
+use Skoflok\Resp\Analyzers\AbstractAnalyzer;
+
+class Syntax extends AbstractAnalyzer
 {
 
 }
