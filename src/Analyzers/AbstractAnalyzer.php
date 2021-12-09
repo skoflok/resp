@@ -13,6 +13,8 @@ abstract class AbstractAnalyzer
     protected $arrayToken;
     protected $crlfToken;
 
+    protected $tokens;
+
     public function __construct()
     {
         $this->simpleStringToken = Constants::SIMPLE_STRING_TOKEN;
@@ -21,5 +23,9 @@ abstract class AbstractAnalyzer
         $this->bulkStringToken = Constants::BULK_STRING_TOKEN;
         $this->arrayToken = Constants::ARRAY_TOKEN;
         $this->crlfToken = Constants::CRLF_TOKEN;
+
+        $this->tokens = Constants::TOKENS;
     }
+
+    
 }
