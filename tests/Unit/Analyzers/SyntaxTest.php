@@ -102,5 +102,41 @@ class SyntaxTest extends TestCase
         $this->markTestIncomplete();
     }
 
+    public function simpleStringProvider()
+    {
+        return [
+            'ok' => [
+                ["+", "OK", "\r\n"],
+                [
+                    ["+", "OK"]
+                ]
+            ],
+            'long_int' => [
+                [":", 123456789101112 ,"\r\n"], 
+                [
+                    [":", 123456789101112]
+                ]
+            ],
+            'error' => [
+                ["-", "Some error text" ,"\r\n"], 
+                [
+                    ["-", "Some error text"], 
+                ]
+            ],
+        ];
+    }
+
+
+    /**
+     * @dataProvider simpleStringProvider
+     *
+     * @return void
+     */
+    public function testSimpleString($tokens, $expected)
+    {
+        $output=$this->analyzer->validate($tokens);
+        $this->assertEquals($expected, $output);
+    }
+
 
 }
