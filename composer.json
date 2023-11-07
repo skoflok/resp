@@ -26,11 +26,11 @@
         }
     },
     "require": {
-        "php": "^7.3",
-        "phpstan/phpstan": "1.2"
+        "php": "^8.2",
+        "phpstan/phpstan": "^1.10"
     },
     "require-dev": {
-        "ext-redis": "^5.3",
-        "phpunit/phpunit": "9.5.x-dev"
+        "ext-redis": "^6.0",
+        "phpunit/phpunit": "^10.0"
     }
 }
